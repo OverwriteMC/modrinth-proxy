@@ -85,8 +85,10 @@ export default async function ModsPage({ searchParams }) {
     facets.push(categories.map(c => `categories:${c}`));
   }
   
-  if (environment) {
-    facets.push([`client_side:${environment === 'client' ? 'required' : 'optional'}`, `server_side:${environment === 'server' ? 'required' : 'optional'}`]);
+  if (environment === 'server') {
+    facets.push(['server_side:required', 'server_side:optional']);
+  } else if (environment === 'client') {
+    facets.push(['client_side:required', 'client_side:optional']);
   }
 
   let data = null;
