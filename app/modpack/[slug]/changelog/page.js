@@ -1,14 +1,12 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { getMod, getModVersions, getTeamMembers, formatDate } from '@/lib/modrinth'
-import { filterModContent, filterTeamMembers, isProjectBlocked, isOrganizationBlocked, filterVersionChangelog } from '@/lib/contentFilter'
+import { getMod, getModVersions, getTeamMembers } from '@/lib/modrinth'
+import { filterModContent, filterTeamMembers, isProjectBlocked, isOrganizationBlocked } from '@/lib/contentFilter'
 import ResourceSidebar from '@/app/components/ResourceSidebar'
 import ContentNavigation from '@/app/components/ContentNavigation'
 import ResourceHeader from '@/app/components/ResourceHeader'
 import IconPreload from '@/app/components/IconPreload'
-import ReactMarkdown from 'react-markdown'
-import remarkGfm from 'remark-gfm'
-import rehypeRaw from 'rehype-raw'
+import ChangelogVersionEntries from '@/app/components/ChangelogVersionEntries'
 
 export async function generateMetadata({ params }) {
   try {
@@ -64,18 +62,7 @@ export default async function ModpackChangelogPage({ params }) {
         <div className="lg:col-span-2">
           <div className="bg-modrinth-dark border border-gray-800 rounded-lg overflow-hidden">
             <div className="p-4 md:p-6">
-              {versions.slice(0, 5).map((version) => (
-                <div key={version.id} className="mb-6 pb-6 border-b border-gray-800 last:border-0">
-                  <div className="flex items-center gap-3 mb-2">
-                    <h3 className="text-lg font-semibold">{version.name}</h3>
-                    <span className={`text-xs px-2 py-0.5 rounded ${version.version_type === 'release' ? 'bg-green-900 text-green-300' : version.version_type === 'beta' ? 'bg-yellow-900 text-yellow-300' : 'bg-red-900 text-red-300'}`}>{version.version_type}</span>
-                    <span className="text-sm text-gray-500">{formatDate(version.date_published)}</span>
-                  </div>
-                  <div className="text-gray-300 text-sm prose prose-invert prose-sm max-w-none">
-                    {version.changelog ? (<ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>{filterVersionChangelog(version.changelog)}</ReactMarkdown>) : (<p className="text-gray-500 italic">Нет описания изменений</p>)}
-                  </div>
-                </div>
-              ))}
+              <ChangelogVersionEntries versions={versions} slug={slug} contentType="modpack" />
             </div>
           </div>
         </div>

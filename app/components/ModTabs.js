@@ -9,6 +9,7 @@ import { filterVersionChangelog } from '@/lib/contentFilter'
 import { versionChannelLetterRingClass } from '@/lib/versionChannelStyles'
 import { LOADERS } from '@/lib/loaders'
 import DownloadsCompactTooltip from './DownloadsCompactTooltip'
+import { ChangelogTimelineRow } from './ChangelogVersionEntries'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import rehypeRaw from 'rehype-raw'
@@ -103,6 +104,12 @@ export default function ModTabs({ mod, versions, initialTab = 'description', ini
     })
   }, [versions, searchQuery, selectedMcVersion, selectedLoader, selectedChannel, showOnlyReleases, releaseVersions])
 
+  const pathMatch = pathname?.match(
+    /^\/(mod|plugin|datapack|shader|resourcepack|modpack)\/([^/]+)/,
+  )
+  const changelogContentType = pathMatch?.[1] ?? 'mod'
+  const changelogSlug = pathMatch?.[2] ?? mod.slug
+
   return (
     <div className="bg-modrinth-dark border border-gray-800 rounded-lg overflow-hidden">
       <div className="flex border-b border-gray-800">
@@ -152,33 +159,58 @@ export default function ModTabs({ mod, versions, initialTab = 'description', ini
         )}
 
         {activeTab === 'changelog' && (
-          <div>
-            {versions.slice(0, 5).map((version) => (
-              <div key={version.id} className="mb-6 pb-6 border-b border-gray-800 last:border-0">
-                <div className="flex items-center gap-3 mb-2">
-                  <h3 className="text-lg font-semibold">{version.name}</h3>
-                  <span
-                    className={`text-xs px-2 py-0.5 rounded ${versionChannelLetterRingClass(version.version_type)}`}
-                  >
-                    {version.version_type}
-                  </span>
-                  <span className="text-sm text-gray-500">{formatDate(version.date_published)}</span>
-                </div>
-                <div className="text-gray-300 text-sm prose prose-invert prose-sm max-w-none">
-                  {version.changelog ? (
-                    <ReactMarkdown 
-                      remarkPlugins={[remarkGfm]}
-                      rehypePlugins={[rehypeRaw]}
-                    >
-                      {filterVersionChangelog(version.changelog)}
-                    </ReactMarkdown>
-                  ) : (
-                    <p className="text-gray-500 italic">Нет описания изменений</p>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
+          <ul className="m-0 list-none p-0">
+            {versions.slice(0, 5).map((version, index) => {
+              const vid = version.id ?? version.version_number
+              const vHref =
+                vid &&
+                `/${changelogContentType}/${changelogSlug}/version/${encodeURIComponent(vid)}`
+              const titleText = version.name || version.version_number
+              const isLast = index === Math.min(versions.length, 5) - 1
+              return (
+                <ChangelogTimelineRow
+                  key={version.id}
+                  channel={version.version_type}
+                  isLast={isLast}
+                  header={
+                    <div className="flex flex-wrap items-center gap-3">
+                      <h3 className="text-lg font-semibold text-white">
+                        {vHref ? (
+                          <Link
+                            href={vHref}
+                            className="transition-colors hover:text-modrinth-green focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-modrinth-green rounded-sm"
+                          >
+                            {titleText}
+                          </Link>
+                        ) : (
+                          titleText
+                        )}
+                      </h3>
+                      <span
+                        className={`text-xs px-2 py-0.5 rounded ${versionChannelLetterRingClass(version.version_type)}`}
+                      >
+                        {version.version_type}
+                      </span>
+                      <span className="text-sm text-gray-500">{formatDate(version.date_published)}</span>
+                    </div>
+                  }
+                >
+                  <div className="text-gray-300 text-sm prose prose-invert prose-sm max-w-none">
+                    {version.changelog ? (
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        rehypePlugins={[rehypeRaw]}
+                      >
+                        {filterVersionChangelog(version.changelog)}
+                      </ReactMarkdown>
+                    ) : (
+                      <p className="text-gray-500 italic">Нет описания изменений</p>
+                    )}
+                  </div>
+                </ChangelogTimelineRow>
+              )
+            })}
+          </ul>
         )}
 
         {activeTab === 'versions' && (

@@ -1467,3 +1467,50 @@ input[type="url"]:-webkit-autofill {
     text-shadow: 0 0 15px rgba(219, 39, 119, 0.8), 0 0 30px rgba(219, 39, 119, 0.8), 0 0 45px rgba(219, 39, 119, 0.6);
   }
 }
+
+.changelog-item {
+  list-style: none;
+}
+
+.changelog-item .changelog-bar-cell {
+  position: relative;
+}
+
+.changelog-item .changelog-bar {
+  position: absolute;
+  left: 0.5rem;
+  top: 0;
+  bottom: 0;
+  width: 0.25rem;
+  border-radius: 9999px;
+  background-color: var(--changelog-bar-color);
+  pointer-events: none;
+}
+
+.changelog-item .changelog-bar::before {
+  content: '';
+  position: absolute;
+  height: 1rem;
+  width: 1rem;
+  left: 50%;
+  top: 0;
+  transform: translateX(-50%);
+  border-radius: 9999px;
+  background-color: var(--changelog-bar-color);
+}
+
+.changelog-item .changelog-bar.release {
+  --changelog-bar-color: var(--color-green);
+}
+
+.changelog-item .changelog-bar.beta {
+  --changelog-bar-color: #ffa347;
+}
+
+.changelog-item .changelog-bar.alpha {
+  --changelog-bar-color: #f87171;
+}
+
+.changelog-item .changelog-version-body {
+  min-width: 0;
+}
