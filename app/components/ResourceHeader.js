@@ -7,6 +7,8 @@ import DownloadModal from './DownloadModal'
 import MobileDownloadButton from './MobileDownloadButton'
 import MinePluginCheckPromo, { DownloadPromoConnector } from './MinePluginCheckPromo'
 
+const MINEPLUGIN_PROMO_MAX_DOWNLOADS = 100_000
+
 const CONTENT_TYPE_NAMES = {
   mod: 'Моды',
   mods: 'Моды',
@@ -47,7 +49,10 @@ export default function ResourceHeader({ resource, contentType, versions = [] })
     ...(resource.additional_categories || [])
   ]
 
-  const showMinePluginCheckPromo = contentType === 'mod' || contentType === 'plugin'
+  const downloads = resource.downloads
+  const showMinePluginCheckPromo =
+    (contentType === 'mod' || contentType === 'plugin') &&
+    (downloads == null || downloads < MINEPLUGIN_PROMO_MAX_DOWNLOADS)
 
   return (
     <>
