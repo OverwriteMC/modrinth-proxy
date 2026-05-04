@@ -2,7 +2,7 @@ import Link from 'next/link'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import rehypeRaw from 'rehype-raw'
-import { formatDate } from '@/lib/modrinth'
+import { formatDate, resolveModrinthProjectAccent } from '@/lib/modrinth'
 import { filterVersionChangelog } from '@/lib/contentFilter'
 
 function changelogBarClass(versionType) {
@@ -11,8 +11,13 @@ function changelogBarClass(versionType) {
   return 'alpha'
 }
 
-export function ChangelogTimelineRow({ channel, isLast, header, children }) {
+export function ChangelogTimelineRow({ channel, isLast, header, children, resourceBarHex }) {
   const barMod = changelogBarClass(channel)
+
+  const barStyle =
+    resourceBarHex != null && resourceBarHex !== ''
+      ? { ['--changelog-bar-color']: resourceBarHex }
+      : undefined
 
   return (
     <li
@@ -20,7 +25,11 @@ export function ChangelogTimelineRow({ channel, isLast, header, children }) {
     >
       <div className="flex gap-x-2">
         <div className="changelog-bar-cell relative w-[1.625rem] shrink-0 self-stretch pt-0.5">
-          <div className={`changelog-bar ${barMod}`} aria-hidden />
+          <div
+            className={`changelog-bar ${resourceBarHex ? '' : barMod}`}
+            style={barStyle}
+            aria-hidden
+          />
         </div>
         <div className="min-w-0 flex-1 pt-0.5">
           {header}
@@ -31,7 +40,14 @@ export function ChangelogTimelineRow({ channel, isLast, header, children }) {
   )
 }
 
-export default function ChangelogVersionEntries({ versions, slug, contentType }) {
+export default function ChangelogVersionEntries({
+  versions,
+  slug,
+  contentType,
+  projectColor,
+}) {
+  const resourceBarHex = resolveModrinthProjectAccent(projectColor)?.accentHex
+
   const versionHref = (version) => {
     const id = version.id ?? version.version_number
     if (!id) return null
@@ -49,6 +65,7 @@ export default function ChangelogVersionEntries({ versions, slug, contentType })
             key={version.id ?? version.version_number}
             channel={version.version_type}
             isLast={isLast}
+            resourceBarHex={resourceBarHex}
             header={
               <div className="mb-0 flex flex-wrap items-center gap-3">
                 <h3 className="text-lg font-semibold text-white">

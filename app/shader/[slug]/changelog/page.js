@@ -62,7 +62,7 @@ export default async function ShaderChangelogPage({ params }) {
         <div className="min-w-0">
           <div className="bg-modrinth-dark border border-gray-800 rounded-lg overflow-hidden">
             <div className="p-4 md:p-6">
-              <ChangelogVersionEntries versions={versions} slug={slug} contentType="shader" />
+              <ChangelogVersionEntries versions={versions} slug={slug} contentType="shader" projectColor={shader.color} />
             </div>
           </div>
         </div>

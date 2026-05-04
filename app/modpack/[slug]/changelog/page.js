@@ -62,7 +62,7 @@ export default async function ModpackChangelogPage({ params }) {
         <div className="lg:col-span-2">
           <div className="bg-modrinth-dark border border-gray-800 rounded-lg overflow-hidden">
             <div className="p-4 md:p-6">
-              <ChangelogVersionEntries versions={versions} slug={slug} contentType="modpack" />
+              <ChangelogVersionEntries versions={versions} slug={slug} contentType="modpack" projectColor={modpack.color} />
             </div>
           </div>
         </div>

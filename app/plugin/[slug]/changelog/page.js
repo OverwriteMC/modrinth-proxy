@@ -115,7 +115,7 @@ export default async function PluginChangelogPage({ params }) {
         <div className="min-w-0">
           <div className="bg-modrinth-dark border border-gray-800 rounded-lg overflow-hidden">
             <div className="p-4 md:p-6">
-              <ChangelogVersionEntries versions={versions} slug={slug} contentType="plugin" />
+              <ChangelogVersionEntries versions={versions} slug={slug} contentType="plugin" projectColor={plugin.color} />
             </div>
           </div>
         </div>

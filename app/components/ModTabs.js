@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { formatDate } from '@/lib/modrinth'
+import { formatDate, resolveModrinthProjectAccent } from '@/lib/modrinth'
 import { compareMinecraftVersionsDesc } from '@/lib/minecraftVersionSort'
 import { filterVersionChangelog } from '@/lib/contentFilter'
 import { versionChannelLetterRingClass } from '@/lib/versionChannelStyles'
@@ -109,6 +109,7 @@ export default function ModTabs({ mod, versions, initialTab = 'description', ini
   )
   const changelogContentType = pathMatch?.[1] ?? 'mod'
   const changelogSlug = pathMatch?.[2] ?? mod.slug
+  const changelogResourceBarHex = resolveModrinthProjectAccent(mod.color)?.accentHex
 
   return (
     <div className="bg-modrinth-dark border border-gray-800 rounded-lg overflow-hidden">
@@ -172,6 +173,7 @@ export default function ModTabs({ mod, versions, initialTab = 'description', ini
                   key={version.id}
                   channel={version.version_type}
                   isLast={isLast}
+                  resourceBarHex={changelogResourceBarHex}
                   header={
                     <div className="flex flex-wrap items-center gap-3">
                       <h3 className="text-lg font-semibold text-white">
