@@ -1,24 +1,46 @@
 'use client'
 
+import StyledTooltip from './StyledTooltip'
+
+function formatAbsoluteRussian(date) {
+  return new Intl.DateTimeFormat('ru-RU', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  }).format(date)
+}
+
 export default function RelativeTime({ dateString, className = '' }) {
   const date = new Date(dateString)
   const now = new Date()
-  
+
   if (isNaN(date.getTime())) {
     return <span className={className}>неизвестно</span>
   }
-  
+
+  const absolute = formatAbsoluteRussian(date)
+  const hintCls = `${className} cursor-help rounded-sm outline-none`.trim()
+
   const diffMs = now - date
-  
 
   if (diffMs < 0) {
-    return <span className={className}>{date.toLocaleDateString('ru-RU')}</span>
+    return (
+      <StyledTooltip label={absolute}>
+        <span className={hintCls} tabIndex={0} aria-label={absolute}>
+          {date.toLocaleDateString('ru-RU')}
+        </span>
+      </StyledTooltip>
+    )
   }
-  
+
   const diffMinutes = Math.floor(diffMs / (1000 * 60))
   const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
-  
+
   let timeText
   if (diffMinutes < 60) {
     timeText = `${Math.max(1, diffMinutes)} мин. назад`
@@ -36,6 +58,11 @@ export default function RelativeTime({ dateString, className = '' }) {
     timeText = `${Math.floor(diffDays / 365)} г. назад`
   }
 
-  return <span className={className}>{timeText}</span>
+  return (
+    <StyledTooltip label={absolute}>
+      <span className={hintCls} tabIndex={0} aria-label={`${absolute}, ${timeText}`}>
+        {timeText}
+      </span>
+    </StyledTooltip>
+  )
 }
-

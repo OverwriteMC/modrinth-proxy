@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { compareMinecraftVersionsDesc } from '@/lib/minecraftVersionSort'
 
 export default function DownloadModal({ mod, versions, contentType = 'mods' }) {
   const router = useRouter()
@@ -30,13 +31,7 @@ export default function DownloadModal({ mod, versions, contentType = 'mods' }) {
     versions.forEach(version => {
       version.game_versions.forEach(v => versionsSet.add(v))
     })
-    const allVersions = Array.from(versionsSet).sort((a, b) => {
-      const getNum = (v) => {
-        const parts = v.split('.').map(n => parseInt(n) || 0)
-        return parts[0] * 1000000 + (parts[1] || 0) * 1000 + (parts[2] || 0)
-      }
-      return getNum(b) - getNum(a)
-    })
+    const allVersions = Array.from(versionsSet).sort(compareMinecraftVersionsDesc)
     
     if (showAllVersions) {
       return allVersions

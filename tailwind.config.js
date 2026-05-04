@@ -5,10 +5,15 @@ module.exports = {
     './pages/**/*.{js,ts,jsx,tsx,mdx}',
     './components/**/*.{js,ts,jsx,tsx,mdx}',
     './app/**/*.{js,ts,jsx,tsx,mdx}',
+    './lib/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
     extend: {
       colors: {
+        'version-release-bg': 'rgba(27, 217, 106, 0.2)',
+        'version-release-fg': '#1bd96a',
+        'version-beta-bg': 'rgba(255, 163, 71, 0.2)',
+        'version-beta-fg': '#ffa347',
         black: 'var(--bg-black)',
         modrinth: {
           green: 'var(--color-green)',

@@ -1,14 +1,26 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { compressVersionRanges, groupVersionsByMajor } from '@/lib/modrinth'
+import { compressVersionRanges } from '@/lib/modrinth'
+import { versionChannelLetterRingClass } from '@/lib/versionChannelStyles'
+import { compareMinecraftVersionsDesc } from '@/lib/minecraftVersionSort'
 import { LOADERS } from '@/lib/loaders'
 import VersionsDropdown from './VersionsDropdown'
 import LoadersDropdown from './LoadersDropdown'
 import ChannelsDropdown from './ChannelsDropdown'
 import RelativeTime from './RelativeTime'
+import DownloadsCompactTooltip from './DownloadsCompactTooltip'
+import VersionEnvironmentDisplay from './VersionEnvironmentDisplay'
+
+const ROW_GRID_XL_WITH_ENV =
+  'xl:grid-cols-[40px_minmax(150px,1fr)_minmax(100px,200px)_minmax(100px,200px)_minmax(48px,68px)_minmax(100px,150px)_minmax(80px,100px)_40px]'
+const ROW_GRID_XL_NO_ENV =
+  'xl:grid-cols-[40px_minmax(150px,1fr)_minmax(100px,200px)_minmax(100px,200px)_minmax(100px,150px)_minmax(80px,100px)_40px]'
+/** У ресурс-паков нет платформенных лоадеров в интерфейсе Modrinth */
+const ROW_GRID_XL_RESOURCEPACK =
+  'xl:grid-cols-[40px_minmax(150px,1fr)_minmax(100px,200px)_minmax(100px,150px)_minmax(80px,100px)_40px]'
 
 export default function VersionsList({ versions, contentType, slug, initialLoader = 'all' }) {
   const router = useRouter()
@@ -57,11 +69,7 @@ export default function VersionsList({ versions, contentType, slug, initialLoade
     versions.forEach(v => {
       v.game_versions.forEach(gv => versionsSet.add(gv))
     })
-    const sorted = Array.from(versionsSet).sort((a, b) => {
-      const aNum = parseFloat(a.match(/[\d.]+/)?.[0] || '0')
-      const bNum = parseFloat(b.match(/[\d.]+/)?.[0] || '0')
-      return bNum - aNum
-    })
+    const sorted = Array.from(versionsSet).sort(compareMinecraftVersionsDesc)
     return sorted
   }, [versions])
 
@@ -72,6 +80,26 @@ export default function VersionsList({ versions, contentType, slug, initialLoade
     })
     return Array.from(loadersSet)
   }, [versions])
+
+  const channelTypesPresent = useMemo(() => {
+    const s = new Set()
+    versions.forEach((v) => {
+      if (v.version_type == null) return
+      const t = String(v.version_type).toLowerCase().replace(/\s+/g, '_')
+      if (t) s.add(t)
+    })
+    return s
+  }, [versions])
+
+  useEffect(() => {
+    setSelectedChannel((ch) => {
+      if (channelTypesPresent.size <= 1) return 'all'
+      if (ch === 'all') return ch
+      return channelTypesPresent.has(ch) ? ch : 'all'
+    })
+  }, [channelTypesPresent])
+
+  const showChannelFilter = channelTypesPresent.size > 1
 
   const releaseVersions = useMemo(() => {
     return mcVersions.filter(v => {
@@ -103,7 +131,11 @@ export default function VersionsList({ versions, contentType, slug, initialLoade
       }
 
       if (selectedChannel !== 'all') {
-        if (version.version_type !== selectedChannel) return false
+        const t =
+          version.version_type != null
+            ? String(version.version_type).toLowerCase().replace(/\s+/g, '_')
+            : ''
+        if (t !== selectedChannel) return false
       }
 
       return true
@@ -115,6 +147,13 @@ export default function VersionsList({ versions, contentType, slug, initialLoade
     (currentPage - 1) * versionsPerPage,
     currentPage * versionsPerPage
   )
+
+  const showEnvironment = contentType === 'plugin'
+  const showPlatforms = contentType !== 'resourcepack'
+
+  let gridRowXl = ROW_GRID_XL_NO_ENV
+  if (showEnvironment) gridRowXl = ROW_GRID_XL_WITH_ENV
+  else if (!showPlatforms) gridRowXl = ROW_GRID_XL_RESOURCEPACK
 
   return (
     <div className="bg-modrinth-dark border border-gray-800 rounded-lg overflow-hidden">
@@ -145,7 +184,7 @@ export default function VersionsList({ versions, contentType, slug, initialLoade
               onShowOnlyReleasesChange={handleShowOnlyReleasesChange}
             />
 
-            {loaders.length > 0 && (
+            {showPlatforms && loaders.length > 0 && (
               <LoadersDropdown 
                 loaders={loaders}
                 selectedLoaders={selectedLoaders}
@@ -153,10 +192,13 @@ export default function VersionsList({ versions, contentType, slug, initialLoade
               />
             )}
 
-            <ChannelsDropdown 
-              selectedChannel={selectedChannel}
-              onChannelChange={handleChannelChange}
-            />
+            {showChannelFilter && (
+              <ChannelsDropdown 
+                selectedChannel={selectedChannel}
+                onChannelChange={handleChannelChange}
+                channelTypesPresent={channelTypesPresent}
+              />
+            )}
 
 
             <div className="text-sm text-gray-400 flex items-center ml-auto">
@@ -165,13 +207,16 @@ export default function VersionsList({ versions, contentType, slug, initialLoade
           </div>
         </div>
         
-        <div className="hidden sm:grid grid-cols-[40px_minmax(150px,1fr)_minmax(120px,180px)_minmax(100px,150px)_40px] xl:grid-cols-[40px_minmax(150px,1fr)_minmax(100px,200px)_minmax(100px,200px)_minmax(100px,150px)_minmax(80px,100px)_40px] gap-3 px-3 py-2 text-sm font-bold text-gray-300 border-b border-gray-800">
+        <div
+          className={`hidden sm:grid grid-cols-[40px_minmax(150px,1fr)_minmax(120px,180px)_minmax(100px,150px)_40px] gap-3 px-3 py-2 text-sm font-bold text-gray-300 border-b border-gray-800 ${gridRowXl}`}
+        >
           <div></div>
           <div>Название</div>
           <div className="xl:hidden">Compatibility</div>
           <div className="xl:hidden">Стата</div>
           <div className="hidden xl:block">Версии игры</div>
-          <div className="hidden xl:block">Платформы</div>
+          {showPlatforms && <div className="hidden xl:block">Платформы</div>}
+          {showEnvironment && <div className="hidden xl:block text-center">Среда</div>}
           <div className="hidden xl:block">Опубликовано</div>
           <div className="hidden xl:block">Загрузок</div>
           <div></div>
@@ -184,16 +229,14 @@ export default function VersionsList({ versions, contentType, slug, initialLoade
             <div>
               {paginatedVersions.map((version, index) => {
               const primaryFile = version.files.find(f => f.primary) || version.files[0]
-              const versionTypeColor = version.version_type === 'release' ? 'bg-green-900 text-green-300' :
-                                      version.version_type === 'beta' ? 'bg-yellow-900 text-yellow-300' :
-                                      'bg-red-900 text-red-300'
+              const versionTypeColor = versionChannelLetterRingClass(version.version_type)
               
               return (
                 <div key={version.id}>
                   <div className="group relative">
                     <div className="px-3 py-2">
-                      <div className="grid grid-cols-[40px_1fr_40px] max-[390px]:flex max-[390px]:flex-col max-[390px]:items-center sm:grid sm:grid-cols-[40px_minmax(150px,1fr)_minmax(120px,180px)_minmax(100px,150px)_40px] xl:grid-cols-[40px_minmax(150px,1fr)_minmax(100px,200px)_minmax(100px,200px)_minmax(100px,150px)_minmax(80px,100px)_40px] gap-3 items-center">
-                        <div className={`relative z-10 w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm ${versionTypeColor}`}>
+                      <div className={`grid grid-cols-[40px_1fr_40px] max-[390px]:flex max-[390px]:flex-col max-[390px]:items-center sm:grid sm:grid-cols-[40px_minmax(150px,1fr)_minmax(120px,180px)_minmax(100px,150px)_40px] gap-3 items-center ${gridRowXl}`}>
+                        <div className={`relative z-10 flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[18px] font-bold ${versionTypeColor}`}>
                           {version.version_type[0].toUpperCase()}
                         </div>
 
@@ -217,7 +260,8 @@ export default function VersionsList({ versions, contentType, slug, initialLoade
                             {range}
                           </span>
                         ))}
-                        {version.loaders.filter(l => l !== 'minecraft').map((loaderId) => {
+                        {showPlatforms &&
+                          version.loaders.filter(l => l !== 'minecraft').map((loaderId) => {
                           const loaderData = LOADERS.find(l => l.id === loaderId)
                           if (!loaderData) return null
                           
@@ -251,11 +295,14 @@ export default function VersionsList({ versions, contentType, slug, initialLoade
                           <svg className="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                           </svg>
-                          {version.downloads >= 1000 
-                            ? `${(version.downloads / 1000).toFixed(1)}k`
-                            : version.downloads
-                          }
+                          <DownloadsCompactTooltip downloads={version.downloads} />
                         </div>
+                        {showEnvironment && (
+                          <VersionEnvironmentDisplay
+                            environment={version.environment}
+                            className="text-xs text-gray-500 line-clamp-2 font-medium"
+                          />
+                        )}
                       </div>
 
                       <div className="relative z-10 hidden xl:flex flex-wrap gap-1 items-start content-start">
@@ -270,39 +317,51 @@ export default function VersionsList({ versions, contentType, slug, initialLoade
                         ))}
                       </div>
 
-                      <div className="relative z-10 hidden xl:flex flex-wrap gap-1 items-start content-start">
-                        {version.loaders.filter(l => l !== 'minecraft').map((loaderId) => {
-                          const loaderData = LOADERS.find(l => l.id === loaderId)
-                          if (!loaderData) return null
-                          
-                          return (
-                            <span 
-                              key={loaderId}
-                              onClick={(e) => handleLoaderClick(e, loaderId)}
-                              className="px-2 py-1 text-xs font-semibold rounded-full hover:underline cursor-pointer capitalize inline-flex items-center gap-1 relative z-10"
-                              style={{ 
-                                backgroundColor: 'var(--bg-tertiary)', 
-                                color: loaderData.color || 'var(--text-muted)' 
-                              }}
-                            >
-                              <div className="w-3 h-3 flex-shrink-0" style={{ color: loaderData.color || 'var(--text-muted)' }}>
-                                {loaderData.icon}
-                              </div>
-                              {loaderData.name}
-                            </span>
-                          )
-                        })}
+                      {showPlatforms && (
+                        <div className="relative z-10 hidden xl:flex flex-wrap gap-1 items-start content-start">
+                          {version.loaders.filter(l => l !== 'minecraft').map((loaderId) => {
+                            const loaderData = LOADERS.find(l => l.id === loaderId)
+                            if (!loaderData) return null
+                            
+                            return (
+                              <span 
+                                key={loaderId}
+                                onClick={(e) => handleLoaderClick(e, loaderId)}
+                                className="px-2 py-1 text-xs font-semibold rounded-full hover:underline cursor-pointer capitalize inline-flex items-center gap-1 relative z-10"
+                                style={{ 
+                                  backgroundColor: 'var(--bg-tertiary)', 
+                                  color: loaderData.color || 'var(--text-muted)' 
+                                }}
+                              >
+                                <div className="w-3 h-3 flex-shrink-0" style={{ color: loaderData.color || 'var(--text-muted)' }}>
+                                  {loaderData.icon}
+                                </div>
+                                {loaderData.name}
+                              </span>
+                            )
+                          })}
+                        </div>
+                      )}
+
+                      {showEnvironment && (
+                        <div className="relative z-10 hidden xl:flex items-center justify-center px-0.5 text-xs text-gray-400 font-medium min-w-0">
+                          <VersionEnvironmentDisplay
+                            environment={version.environment}
+                            compactTableColumn
+                          />
+                        </div>
+                      )}
+
+                      <div className="relative z-10 pointer-events-none hidden xl:flex items-center gap-1 text-xs text-gray-400 font-medium">
+                        <span className="pointer-events-auto inline-block min-w-0">
+                          <RelativeTime dateString={version.date_published} />
+                        </span>
                       </div>
 
                       <div className="relative z-10 pointer-events-none hidden xl:flex items-center gap-1 text-xs text-gray-400 font-medium">
-                        <RelativeTime dateString={version.date_published} />
-                      </div>
-
-                      <div className="relative z-10 pointer-events-none hidden xl:flex items-center gap-1 text-xs text-gray-400 font-medium">
-                        {version.downloads >= 1000 
-                          ? `${(version.downloads / 1000).toFixed(1)}k`
-                          : version.downloads
-                        }
+                        <span className="pointer-events-auto inline-block min-w-0">
+                          <DownloadsCompactTooltip downloads={version.downloads} />
+                        </span>
                       </div>
 
                         <div className="relative z-10 sm:hidden flex flex-col gap-1 text-xs text-gray-400 font-medium mt-2 max-[390px]:items-center max-[390px]:justify-center min-[391px]:col-span-2">
@@ -313,34 +372,42 @@ export default function VersionsList({ versions, contentType, slug, initialLoade
                               </span>
                             ))}
                           </div>
-                          <div className="flex flex-wrap gap-1 max-[390px]:justify-center">
-                            {version.loaders.filter(l => l !== 'minecraft').map((loaderId) => {
-                              const loaderData = LOADERS.find(l => l.id === loaderId)
-                              if (!loaderData) return null
-                              
-                              return (
-                                <span 
-                                  key={loaderId}
-                                  onClick={(e) => handleLoaderClick(e, loaderId)}
-                                  className="px-2 py-0.5 text-xs rounded-full hover:underline cursor-pointer capitalize inline-flex items-center gap-1 relative z-10" 
-                                  style={{ 
-                                    backgroundColor: 'var(--bg-tertiary)', 
-                                    color: loaderData.color || 'var(--text-muted)' 
-                                  }}
-                                >
-                                  <div className="w-3 h-3 flex-shrink-0" style={{ color: loaderData.color || 'var(--text-muted)' }}>
-                                    {loaderData.icon}
-                                  </div>
-                                  {loaderData.name}
-                                </span>
-                              )
-                            })}
-                          </div>
+                          {showPlatforms && (
+                            <div className="flex flex-wrap gap-1 max-[390px]:justify-center">
+                              {version.loaders.filter(l => l !== 'minecraft').map((loaderId) => {
+                                const loaderData = LOADERS.find(l => l.id === loaderId)
+                                if (!loaderData) return null
+                                
+                                return (
+                                  <span 
+                                    key={loaderId}
+                                    onClick={(e) => handleLoaderClick(e, loaderId)}
+                                    className="px-2 py-0.5 text-xs rounded-full hover:underline cursor-pointer capitalize inline-flex items-center gap-1 relative z-10" 
+                                    style={{ 
+                                      backgroundColor: 'var(--bg-tertiary)', 
+                                      color: loaderData.color || 'var(--text-muted)' 
+                                    }}
+                                  >
+                                    <div className="w-3 h-3 flex-shrink-0" style={{ color: loaderData.color || 'var(--text-muted)' }}>
+                                      {loaderData.icon}
+                                    </div>
+                                    {loaderData.name}
+                                  </span>
+                                )
+                              })}
+                            </div>
+                          )}
                           <div className="flex gap-2 max-[390px]:justify-center">
                             <RelativeTime dateString={version.date_published} />
                             <span>•</span>
-                            <span>{version.downloads >= 1000 ? `${(version.downloads / 1000).toFixed(1)}k` : version.downloads}</span>
+                            <DownloadsCompactTooltip downloads={version.downloads} />
                           </div>
+                          {showEnvironment && (
+                            <VersionEnvironmentDisplay
+                              environment={version.environment}
+                              className="text-xs font-medium text-gray-500 max-[390px]:text-center line-clamp-2 w-full"
+                            />
+                          )}
                         </div>
 
                         {primaryFile && (
