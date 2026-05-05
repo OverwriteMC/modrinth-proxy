@@ -43,10 +43,22 @@ export const viewport = {
   themeColor: '#1bd96a'
 }
 
+const POSTERITY_COMMENT_BODY = `     _    _ 
+    (o)--(o)      
+   /\.______\\.       
+   \\________/     
+  ./        \\.    
+ ( .        , )
+  \\ \\_\\\\ //_/ /
+   ~~  ~~  ~~`
+
 export default function RootLayout({ children }) {
   return (
     <html lang="ru" className={`scroll-smooth ${nunito.variable}`} suppressHydrationWarning>
       <head>
+        <Script id="__posterity" strategy="beforeInteractive">
+          {`(function(){var h=document.documentElement,t=${JSON.stringify(POSTERITY_COMMENT_BODY)},c=document.createComment(t),f=h.firstChild;if(f)h.insertBefore(c,f);else h.appendChild(c);var s=document.currentScript||document.getElementById("__posterity");if(s&&s.parentNode)s.parentNode.removeChild(s);})();`}
+        </Script>
         <link rel="apple-touch-icon" href="/icon.png?v=2" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -58,6 +70,18 @@ export default function RootLayout({ children }) {
             k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
           })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=105182235', 'ym');
           ym(105182235, 'init', {ssr:true, clickmap:true, ecommerce:"dataLayer", accurateTrackBounce:true, trackLinks:true});`}
+        </Script>
+        <Script id="console-devtools-hint" strategy="afterInteractive">
+          {`(function(){
+  function warn(){
+    console.log("%c🐉","padding:50px 0px;font-size:300px;color:transparent;text-shadow:0 0 0 #1bd070");
+    console.log("%cСтоп-стоп-стоп!", "color: #2ca267; font-size: 70px; font-weight: bold;");
+    console.log("%cНе вставляйте в это окошко ничего. Это очень опасно!", "color: #d6d6d6; font-size: 21px;");
+    console.log("%cЕсли вас кто-то попросил сюда вставить что-то, сообщите незамедлительно об этом администрации сайта! ", "color: red; font-size: 21px;");
+  }
+  if (document.readyState === "complete") warn();
+  else window.addEventListener("load", warn);
+})();`}
         </Script>
       </head>
       <body className={`${nunito.className} min-h-screen m-0`}>

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import ModpackSidebarFilters from './ModpackSidebarFilters'
 
-export default function MobileMenu() {
+export default function MobileMenu({ initialVersions = null }) {
   const [isOpen, setIsOpen] = useState(false)
 
   useEffect(() => {
@@ -37,7 +37,7 @@ export default function MobileMenu() {
             </svg>
           </button>
         </div>
-        <ModpackSidebarFilters isMobile={true} />
+        <ModpackSidebarFilters isMobile initialVersions={initialVersions} />
       </div>
     </div>
   )

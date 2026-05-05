@@ -146,12 +146,19 @@ export default function MobileNav({ onFilterClick }) {
     },
   ]
 
-  const showFilterButton = pathname.startsWith('/mods') || 
-                          pathname.startsWith('/plugins') || 
-                          pathname.startsWith('/shaders') || 
-                          pathname.startsWith('/resourcepacks') || 
-                          pathname.startsWith('/datapacks') ||
-                          pathname.startsWith('/modpacks')
+  const showFilterButton =
+    pathname.startsWith('/mods') ||
+    pathname.startsWith('/plugins') ||
+    pathname.startsWith('/shaders') ||
+    pathname.startsWith('/resourcepacks') ||
+    pathname.startsWith('/datapacks') ||
+    pathname.startsWith('/modpacks') ||
+    pathname.startsWith('/discover/mods') ||
+    pathname.startsWith('/discover/plugins') ||
+    pathname.startsWith('/discover/shaders') ||
+    pathname.startsWith('/discover/resourcepacks') ||
+    pathname.startsWith('/discover/datapacks') ||
+    pathname.startsWith('/discover/modpacks')
 
   const handleFilterClick = () => {
     if (typeof window !== 'undefined') {

@@ -6,6 +6,11 @@ import { RESOURCEPACK_CATEGORIES } from '@/lib/resourcepackCategories'
 import { SHADER_STYLES, SHADER_FEATURES, SHADER_PERFORMANCE } from '@/lib/shaderCategories'
 import RelativeTime from './RelativeTime'
 
+function uniqueStrings(list) {
+  if (!Array.isArray(list)) return []
+  return [...new Set(list)]
+}
+
 export default function ResourceCard({ resource, type = 'mod' }) {
   const typeMap = {
     'mod': 'mod',
@@ -150,7 +155,7 @@ export default function ResourceCard({ resource, type = 'mod' }) {
             <p className="mt-1 text-xs text-gray-500">от {resource.author}</p>
             <p className="mt-2 line-clamp-2 flex-1 text-sm leading-relaxed text-gray-400">{resource.description}</p>
             <div className="mt-3 flex flex-wrap items-center gap-1.5">
-              {resource.display_categories?.slice(0, 3).map((catId) => {
+              {uniqueStrings(resource.display_categories).slice(0, 3).map((catId) => {
                 const categoryData = getCategoryIcon(catId)
                 if (!categoryData) {
                   return (
@@ -238,8 +243,8 @@ export default function ResourceCard({ resource, type = 'mod' }) {
               <span className="text-xs font-semibold">{environment.label}</span>
             </div>
           )}
-          {resource.categories && resource.categories
-            .filter(shouldShowCategory)
+          {resource.categories &&
+            uniqueStrings(resource.categories.filter(shouldShowCategory))
             .slice(0, 4)
             .map((catId) => {
             const categoryData = getCategoryIcon(catId)

@@ -180,7 +180,7 @@ export default async function ModsPage({ searchParams }) {
 
   return (
     <>
-      <MobileMenu />
+      <MobileMenu initialVersions={mcVersions} />
       <div className="flex gap-6">
         <SidebarFilters initialVersions={mcVersions} />
         <div className="flex-1 min-w-0">

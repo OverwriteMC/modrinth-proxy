@@ -161,7 +161,7 @@ export default async function DatapacksPage({ searchParams }) {
 
   return (
     <>
-      <MobileMenu />
+      <MobileMenu initialVersions={mcVersions} />
       <div className="flex gap-6">
         <DatapackSidebarFilters initialVersions={mcVersions} />
         <div className="flex-1 min-w-0">

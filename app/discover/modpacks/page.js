@@ -222,7 +222,7 @@ export default async function ModpacksPage({ searchParams }) {
 
   return (
     <>
-      <MobileMenu />
+      <MobileMenu initialVersions={mcVersions} />
       <div className="flex gap-6">
         <ModpackSidebarFilters initialVersions={mcVersions} />
         <div className="flex-1 min-w-0">

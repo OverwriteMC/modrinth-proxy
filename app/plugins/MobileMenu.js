@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import PluginSidebarFilters from './PluginSidebarFilters'
 
-export default function MobileMenu() {
+export default function MobileMenu({ initialVersions = null }) {
   const [isOpen, setIsOpen] = useState(false)
 
   useEffect(() => {
@@ -31,7 +31,7 @@ export default function MobileMenu() {
             </svg>
           </button>
         </div>
-        <PluginSidebarFilters isMobile={true} />
+        <PluginSidebarFilters isMobile initialVersions={initialVersions} />
       </div>
     </div>
   )

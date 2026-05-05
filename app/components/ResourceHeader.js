@@ -45,8 +45,10 @@ export default function ResourceHeader({ resource, contentType, versions = [] })
   }
   
   const allResourceCategories = [
-    ...(resource.categories || []),
-    ...(resource.additional_categories || [])
+    ...new Set([
+      ...(resource.categories || []),
+      ...(resource.additional_categories || []),
+    ]),
   ]
 
   const downloads = resource.downloads
